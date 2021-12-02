@@ -1,0 +1,38 @@
+FROM docker.io/arm64v8/debian:bullseye
+
+RUN apt-get -y update  \
+    && apt-get install -y \
+    udev \
+    x11-xkb-utils \
+    xkb-data \
+    xserver-xorg-core \
+    xinit \
+    xserver-xorg-input-libinput \
+    xserver-xorg-input-evdev \
+    xserver-xorg-input-mouse \
+    xserver-xorg-input-kbd \
+    xserver-xorg-video-fbdev \
+    x11-utils \
+    xfonts-base \
+    dbus-x11 \
+    tini \
+    psmisc \
+    wget \
+    xfce4 \
+    onboard  \
+    && apt-get clean  \
+    && apt-get autoremove  \
+    && rm -rf /var/lib/apt/lists/*
+
+# customization KIOSK MODE
+COPY ContainerFileX11/etc/X11/xorg.conf /etc/X11/xorg.conf
+COPY ContainerFileX11/usr/bin/entrypoint.sh /usr/bin/entrypoint.sh
+COPY ContainerFileX11/usr/share/desktop-base/profiles/xdg-config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml /usr/share/desktop-base/profiles/xdg-config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml
+COPY ContainerFileX11/usr/share/icons/inviscursor-theme /usr/share/icons/inviscursor-theme
+COPY ContainerFileX11/root/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml /root/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml
+COPY ContainerFileX11/root/.config/dconf/user /root/.config/dconf/user
+
+RUN chmod +x /usr/bin/entrypoint.sh
+ENV UDEV='on'
+
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]

@@ -1,0 +1,29 @@
+FROM docker.io/arm64v8/debian:bullseye
+
+RUN apt-get -y update \
+        && apt-get install -y \
+        udev \
+        dbus-x11 \
+        tini \
+        xinput \
+        libicu67 \
+        curl \
+        gettext \
+        apt-transport-https \
+        libx11-6 \
+        libunwind8 \
+        libfontconfig1 \
+        libgtk-3-0 \
+        libgtk-3-bin \
+        libgtk-3-common \
+        libinput10 \
+        && apt-get clean \
+        && apt-get autoremove \
+        && rm -rf /var/lib/apt/lists/*
+
+COPY ContainerFileX11Base/usr/bin/entrypoint.sh /usr/bin/entrypoint.sh
+
+RUN chmod +x /usr/bin/entrypoint.sh
+ENV UDEV='on'
+
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]

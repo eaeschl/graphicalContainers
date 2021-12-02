@@ -1,0 +1,39 @@
+##
+# Uno Platform X11 base app
+##
+ARG IMAGE_ARCH=arm64
+ARG PROJECT_NAME=unoPlatformEmbedded1.Skia.Gtk
+
+# --------- BUILD
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS Build
+
+ARG IMAGE_ARCH
+ARG PROJECT_NAME
+
+COPY . /build
+WORKDIR /build/${PROJECT_NAME}
+
+# build
+RUN dotnet publish -r linux-${IMAGE_ARCH}
+
+
+# --------- DEPLOY
+FROM docker.io/seadoglinux/x11-base:0.0.1 AS Deploy
+
+ARG IMAGE_ARCH
+ARG PROJECT_NAME
+
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
+	libgpiod2 \
+	libgpiod-dev \
+	libicu67 \
+    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+
+# copy project
+COPY --from=Build /build/${PROJECT_NAME}/bin/Debug/net5.0/linux-${IMAGE_ARCH}/publish /project
+# make the symlink
+RUN ln -s /project/${PROJECT_NAME} /project/program && \
+	chmod +x  /project/program
+
+# execute
+CMD ["./project/program"]
